@@ -1,0 +1,8 @@
+can curl api routes like this:
+curl localhost:3000/api/hello
+
+
+TODO:
+database
+CRUD
+display data
