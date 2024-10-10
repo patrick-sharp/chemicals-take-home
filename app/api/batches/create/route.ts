@@ -3,17 +3,19 @@ import { NextResponse } from 'next/server';
 
 // TODO: make this a post request, and make it create a new batch
  
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  //const petName = searchParams.get('petName');
-  //const ownerName = searchParams.get('ownerName');
+export async function POST(request: Request) {
+  let { productID, amount } = await request.json()
  
-  //try {
-  //  if (!petName || !ownerName) throw new Error('Pet and owner names required');
-  //  await sql`INSERT INTO Pets (Name, Owner) VALUES (${petName}, ${ownerName});`;
-  //} catch (error) {
-  //  return NextResponse.json({ error }, { status: 500 });
-  //}
+  try {
+    if (!amount) {
+      const { rows } = await sql`SELECT default_batch_size FROM products WHERE id = ${productID}`;
+      amount = rows[0].default_batch_size;
+    }
+    const insert = await sql`INSERT INTO batches (product_id, amount, status, date_scheduled) VALUES (${productID}, ${amount}, 'scheduled', now()) RETURNING *;`;
+    return NextResponse.json(insert.rows[0], { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error }, { status: 500 });
+  }
  
   //const pets = await sql`SELECT * FROM Pets;`;
   //return NextResponse.json({ pets }, { status: 200 });

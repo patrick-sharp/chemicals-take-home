@@ -38,7 +38,6 @@ VALUES
 
 CREATE TYPE batch_status AS ENUM ('scheduled', 'in-progress', 'completed');
 
--- could also add these cols too:
 CREATE TABLE batches (
   id serial PRIMARY KEY,
   product_id varchar(255) references products(id),
