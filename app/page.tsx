@@ -24,16 +24,19 @@ function getProductComponents(
     'in-progress': 1,
     completed: 2
   }
+
+  const dateToNum = date => new Date(date).getTime();
+
   const batchCompare = (a,b) => {
     const statusDiff = statusMap[a.status] - statusMap[b.status];
     if (statusDiff == 0){
       switch(a.status) {
         case 'scheduled':
-          return Date(a.date_scheduled) - Date(b.date_scheduled);
+          return dateToNum(a.date_scheduled) - dateToNum(b.date_scheduled);
         case 'in-progress':
-          return Date(a.date_in_progress) - Date(b.date_in_progress);
+          return dateToNum(a.date_in_progress) - dateToNum(b.date_in_progress);
         case 'completed':
-          return Date(a.date_completed) - Date(b.date_completed);
+          return dateToNum(a.date_completed) - dateToNum(b.date_completed);
       }
     } else {
       return statusDiff;
