@@ -3,10 +3,65 @@ import Image from "next/image";
 import React, { useState, useEffect, Fragment } from "react";
 import Product from "./components/product";
 
+function getProductComponents(
+  products, demand, batches, createBatch, updateBatch
+) {
+  if (!products || !demand || !batches) {
+    return null;
+  }
+
+  const batchesByChemical = {}
+  for (let p of products) {
+    batchesByChemical[p.id] = [];
+  }
+
+  for (let b of batches) {
+    batchesByChemical[b.product_id].push(b);
+  }
+
+  const statusMap = {
+    scheduled: 0,
+    'in-progress': 1,
+    completed: 2
+  }
+  const batchCompare = (a,b) => {
+    const statusDiff = statusMap[a.status] - statusMap[b.status];
+    if (statusDiff == 0){
+      switch(a.status) {
+        case 'scheduled':
+          return Date(a.date_scheduled) - Date(b.date_scheduled);
+        case 'in-progress':
+          return Date(a.date_in_progress) - Date(b.date_in_progress);
+        case 'completed':
+          return Date(a.date_completed) - Date(b.date_completed);
+      }
+    } else {
+      return statusDiff;
+    }
+  }
+
+  for (let k in batchesByChemical) {
+    batchesByChemical[k].sort(batchCompare);
+  }
+  const productComponents = products.map(product => {
+    const productDemand = demand.find(d => d.product_id === product.id);
+    return <Fragment key={product.id}>
+      <Product 
+        product={product} 
+        demand={productDemand}
+        batches={batchesByChemical[product.id]}
+        createBatch={createBatch}
+        updateBatch={updateBatch}
+      />
+    </Fragment>
+  })
+  return productComponents
+}
+
 export default function Home() {
-  const [products, setProducts] = useState([]);
-  const [demand, setDemand] = useState([]);
-  const [batches, setBatches] = useState([]);
+  const [products, setProducts] = useState(null);
+  const [demand, setDemand] = useState(null);
+  const [batches, setBatches] = useState(null);
 
   const getProducts = async () =>
     fetch("/api/products/list")
@@ -71,52 +126,9 @@ export default function Home() {
       })
   };
 
-  const batchesByChemical = {}
-  for (let p of products) {
-    batchesByChemical[p.id] = [];
-  }
-
-  for (let b of batches) {
-    batchesByChemical[b.product_id].push(b);
-  }
-
-  const statusMap = {
-    scheduled: 0,
-    'in-progress': 1,
-    completed: 2
-  }
-  const batchCompare = (a,b) => {
-    const statusDiff = statusMap[a.status] - statusMap[b.status];
-    if (statusDiff == 0){
-      switch(a.status) {
-        case 'scheduled':
-          return Date(a.date_scheduled) - Date(b.date_scheduled);
-        case 'in-progress':
-          return Date(a.date_in_progress) - Date(b.date_in_progress);
-        case 'completed':
-          return Date(a.date_completed) - Date(b.date_completed);
-      }
-    } else {
-      return statusDiff;
-    }
-  }
-
-  for (let k in batchesByChemical) {
-    batchesByChemical[k].sort(batchCompare);
-  }
-
-  const productComponents = products.map(product => {
-    const productDemand = demand.find(d => d.product_id === product.id);
-    return <Fragment key={product.id}>
-      <Product 
-        product={product} 
-        demand={productDemand}
-        batches={batchesByChemical[product.id]}
-        createBatch={createBatch}
-        updateBatch={updateBatch}
-      />
-    </Fragment>
-  })
+  const productComponents = getProductComponents(
+    products, demand, batches, createBatch, updateBatch
+  );
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
@@ -125,6 +137,7 @@ export default function Home() {
           <button
             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
             onClick={resetBatches}
+            style={{background: "orange"}}
           >
             <Image
               className="dark:invert"

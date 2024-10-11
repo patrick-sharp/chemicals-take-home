@@ -12,7 +12,7 @@ CRUD endpoints
   [x] list products
 display data
   [x] integer input for scheduling batch
-  [ ] summary for total demand
+  [x] summary for total demand
   [x] breakdown of each batch
   [x] render each batch nicely
     [x] each status has a different indicator

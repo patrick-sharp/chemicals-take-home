@@ -6,7 +6,7 @@ export default function Batch({ batch, updateBatch }) {
   let dateUpdated;
   let nextStatus;
   let displayStatus;
-  let buttonClassName = "border border-transparent hover:bg-[#686868] flex items-center justify-center bg-foreground text-background gap-2";
+  let buttonClassName = "border border-transparent hover:bg-[#a0a0a0] flex items-center justify-center bg-foreground text-background gap-2";
   let buttonDisabled = false;
   let buttonColor = null;
   let statusEmoji;
@@ -37,7 +37,7 @@ export default function Batch({ batch, updateBatch }) {
   const formattedDate = moment(dateUpdated).format('MMMM Do YYYY');
 
   return <div className="flex gap-8 items-center" style={{paddingBottom: 10}}>
-    <span style={{width: 40}}>{batch.amount}</span>
+    <span style={{width: 100}}>{batch.amount} gallons</span>
     <span style={{width: 130}}><span style={{paddingRight: 15}}>{statusEmoji}</span>{batch.status}</span>
     <span style={{width: 180}}>{formattedDate}</span>
     <button 
