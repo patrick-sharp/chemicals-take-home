@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
+import Batch from "./batch";
 
-export default function Product({ product, batches, demand, createBatch }) {
+export default function Product({ product, batches, demand, createBatch, updateBatch }) {
   const [amount, setAmount] = useState("");
 
   const onAmountChange = (e) => {
@@ -11,7 +12,9 @@ export default function Product({ product, batches, demand, createBatch }) {
   }
 
   const batchComponents = batches.map(b => {
-    return <li>{b.product_id} | {b.amount} | {b.status}</li>
+    return <Fragment key={b.id}>
+      <Batch batch={b} updateBatch={updateBatch}/>
+    </Fragment>
   });
 
   return (

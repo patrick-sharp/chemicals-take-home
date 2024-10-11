@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import Product from "./components/product";
 
 export default function Home() {
@@ -53,6 +53,23 @@ export default function Home() {
         setBatches(result.batches.rows);
       });
 
+
+  const updateBatch = async (batchID, status) => {
+    const request = {
+      method: "POST",
+      body: JSON.stringify({ batchID: batchID, status: status })
+    }
+    fetch("/api/batches/update")
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (result) {
+        console.log("YURRRR");
+        console.log(result);
+        //setBatches(result.batches.rows);
+      })
+  };
+
   const batchesByChemical = {}
   for (let p of products) {
     batchesByChemical[p.id] = [];
@@ -89,12 +106,15 @@ export default function Home() {
 
   const productComponents = products.map(product => {
     const productDemand = demand.find(d => d.product_id === product.id);
-    return <Product 
-      product={product} 
-      demand={productDemand}
-      batches={batchesByChemical[product.id]}
-      createBatch={createBatch}
-    />
+    return <Fragment key={product.id}>
+      <Product 
+        product={product} 
+        demand={productDemand}
+        batches={batchesByChemical[product.id]}
+        createBatch={createBatch}
+        updateBatch={updateBatch}
+      />
+    </Fragment>
   })
 
   return (

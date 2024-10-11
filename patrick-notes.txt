@@ -8,11 +8,15 @@ CRUD endpoints
   [ ] update batch
   [x] reset batches
   [x] list batches
-  [ ] list demand
-  [ ] list products
+  [x] list demand
+  [x] list products
 display data
-  popup modal for scheduling batch
+  integer input for scheduling batch
   summary for total demand
   breakdown of each batch
+  [ ] render each batch nicely
+    [ ] each chemical is a different color
+    [ ] each status is a different color
+  [ ] ability to move each batch to the next stage
 
 
