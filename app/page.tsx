@@ -11,11 +11,11 @@ function getProductComponents(
   }
 
   const batchesByChemical = {}
-  for (let p of products) {
+  for (const p of products) {
     batchesByChemical[p.id] = [];
   }
 
-  for (let b of batches) {
+  for (const b of batches) {
     batchesByChemical[b.product_id].push(b);
   }
 
@@ -40,7 +40,7 @@ function getProductComponents(
     }
   }
 
-  for (let k in batchesByChemical) {
+  for (const k in batchesByChemical) {
     batchesByChemical[k].sort(batchCompare);
   }
   const productComponents = products.map(product => {

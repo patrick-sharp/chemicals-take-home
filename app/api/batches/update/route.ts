@@ -2,7 +2,7 @@ import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  let { batchID, status } = await request.json()
+  const { batchID, status } = await request.json()
 
   try {
     let update;

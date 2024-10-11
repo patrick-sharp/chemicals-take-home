@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, Fragment } from "react";
 import Batch from "./batch";
 
 export default function Product({ product, batches, demand, createBatch, updateBatch }) {
@@ -20,7 +20,7 @@ export default function Product({ product, batches, demand, createBatch, updateB
   let scheduledDemand = 0;
   let inProgressDemand = 0;
   let completedDemand = 0;
-  for (let b of batches) {
+  for (const b of batches) {
     switch(b.status) {
       case 'scheduled':
         scheduledDemand += b.amount;
@@ -36,9 +36,6 @@ export default function Product({ product, batches, demand, createBatch, updateB
 
   const demandWidth = 400
 
-  const remainingDemand = demand.amount - completedDemand - inProgressDemand - scheduledDemand;
-
-  const demandComplete = remainingDemand <= 0;
   let productStatus;
   if (demand.amount - completedDemand <= 0) {
     productStatus = <span style={{color: "green"}}>complete</span>
