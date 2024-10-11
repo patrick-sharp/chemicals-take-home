@@ -19,17 +19,21 @@ export default function Product({ product, batches, demand, createBatch, updateB
 
   return (
     <div className="flex flex-col items-center">
-      {product.name}
-      <div className="flex flex-col gap-8" style={{padding: 8, paddingBottom: 30}}>
+      <span style = {{fontSize: 26}}>
+        {product.name}
+      </span>
+      <div className="flex flex-col gap-8 items-center" style={{padding: 8, paddingBottom: 30}}>
         <div className="flex gap-8" style={{padding: 8}}>
           <button 
-            className=" border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+            className="border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+            style={{ width: 200 }}
             onClick={() => createBatch(product.id, amount)}
           >
             Schedule batch
           </button>
           <input 
-            style={{ color: 'black' }} 
+            style={{ color: 'black', width: 200, paddingLeft: 20 }} 
+            placeholder="Amount"
             value={amount} 
             onChange={onAmountChange}/>
         </div>
