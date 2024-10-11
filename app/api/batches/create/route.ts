@@ -1,8 +1,6 @@
 import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 
-// TODO: make this a post request, and make it create a new batch
- 
 export async function POST(request: Request) {
   let { productID, amount } = await request.json()
  
@@ -16,8 +14,4 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json({ error }, { status: 500 });
   }
- 
-  //const pets = await sql`SELECT * FROM Pets;`;
-  //return NextResponse.json({ pets }, { status: 200 });
-  return NextResponse.json({ message: 'GETTEM' }, { status: 200 });
 }

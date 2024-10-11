@@ -1,26 +1,39 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import Product from "./components/product";
 
 export default function Home() {
+  const [products, setProducts] = useState([]);
+  const [demand, setDemand] = useState([]);
   const [batches, setBatches] = useState([]);
 
-  console.log("BATCHES", batches);
+  const getProducts = async () =>
+    fetch("/api/products/list")
+      .then(function (response) { return response.json(); })
+      .then(function (result) { setProducts(result.products.rows); });
+
+  const getDemand = async () =>
+    fetch("/api/demand/list")
+      .then(function (response) { return response.json(); })
+      .then(function (result) { setDemand(result.demand.rows); });
 
   const getBatches = async () =>
     fetch("/api/batches/list")
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (result) {
-        setBatches(result.batches.rows);
-      });
+      .then(function (response) { return response.json(); })
+      .then(function (result) { setBatches(result.batches.rows); });
 
+  useEffect(() => {
+    getProducts();
+    getDemand();
+    getBatches();
+  }, []);
 
   const createBatch = async (productID, amount) => {
+    const requestAmount = amount === "" ? null : parseInt(amount)
     const request = {
       method: "POST",
-      body: JSON.stringify({ productID: productID, amount: amount })
+      body: JSON.stringify({ productID: productID, amount: requestAmount })
     }
     fetch("/api/batches/create", request)
       .then(function (response) {
@@ -31,7 +44,6 @@ export default function Home() {
       })
   };
 
-
   const resetBatches = async () =>
     fetch("/api/batches/reset")
       .then(function (response) {
@@ -41,11 +53,49 @@ export default function Home() {
         setBatches(result.batches.rows);
       });
 
-  useEffect(() => {
-    getBatches();
-  }, []);
+  const batchesByChemical = {}
+  for (let p of products) {
+    batchesByChemical[p.id] = [];
+  }
 
-  const batchJSX = batches.map((b) => <li className="flex gap-8" key={b.id}><span>{b.product_id}</span><span>{b.amount}</span> <span>{b.status}</span></li>)
+  for (let b of batches) {
+    batchesByChemical[b.product_id].push(b);
+  }
+
+  const statusMap = {
+    scheduled: 0,
+    'in-progress': 1,
+    completed: 2
+  }
+  const batchCompare = (a,b) => {
+    const statusDiff = statusMap[a.status] - statusMap[b.status];
+    if (statusDiff == 0){
+      switch(a.status) {
+        case 'scheduled':
+          return Date(a.date_scheduled) - Date(b.date_scheduled);
+        case 'in-progress':
+          return Date(a.date_in_progress) - Date(b.date_in_progress);
+        case 'completed':
+          return Date(a.date_completed) - Date(b.date_completed);
+      }
+    } else {
+      return statusDiff;
+    }
+  }
+
+  for (let k in batchesByChemical) {
+    batchesByChemical[k].sort(batchCompare);
+  }
+
+  const productComponents = products.map(product => {
+    const productDemand = demand.find(d => d.product_id === product.id);
+    return <Product 
+      product={product} 
+      demand={productDemand}
+      batches={batchesByChemical[product.id]}
+      createBatch={createBatch}
+    />
+  })
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
@@ -64,134 +114,11 @@ export default function Home() {
             />
             RESET BATCHES
           </button>
-          <button
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            onClick={() => createBatch('chem-a', null)}
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            SCHEDULE BATCH
-          </button>
         </div>
         <ul>
-          {batchJSX}
+          {productComponents}
         </ul>
       </main>
     </div>
   )
-  // return (
-  //   <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-  //     <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-  //       <Image
-  //         className="dark:invert"
-  //         src="https://nextjs.org/icons/next.svg"
-  //         alt="Next.js logo"
-  //         width={180}
-  //         height={38}
-  //         priority
-  //       />
-  //       <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-  //         <li className="mb-2">
-  //           Get started by editing{" "}
-  //           <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-  //             app/page.tsx
-  //           </code>
-  //           .
-  //         </li>
-  //         <li>Save and see your changes instantly.</li>
-  //       </ol>
-
-  //       <div className="flex gap-4 items-center flex-col sm:flex-row">
-  //         <button
-  //           className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-  //           onClick={resetBatches}
-  //         >
-  //           <Image
-  //             className="dark:invert"
-  //             src="https://nextjs.org/icons/vercel.svg"
-  //             alt="Vercel logomark"
-  //             width={20}
-  //             height={20}
-  //           />
-  //           RESET BATCHES
-  //         </button>
-  //         <a
-  //           className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-  //           href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-  //           target="_blank"
-  //           rel="noopener noreferrer"
-  //         >
-  //           <Image
-  //             className="dark:invert"
-  //             src="https://nextjs.org/icons/vercel.svg"
-  //             alt="Vercel logomark"
-  //             width={20}
-  //             height={20}
-  //           />
-  //           Deploy now
-  //         </a>
-  //         <a
-  //           className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-  //           href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-  //           target="_blank"
-  //           rel="noopener noreferrer"
-  //         >
-  //           Read our docs
-  //         </a>
-  //       </div>
-  //     </main>
-  //     <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-  //       <a
-  //         className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-  //         href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         <Image
-  //           aria-hidden
-  //           src="https://nextjs.org/icons/file.svg"
-  //           alt="File icon"
-  //           width={16}
-  //           height={16}
-  //         />
-  //         Learn
-  //       </a>
-  //       <a
-  //         className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-  //         href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         <Image
-  //           aria-hidden
-  //           src="https://nextjs.org/icons/window.svg"
-  //           alt="Window icon"
-  //           width={16}
-  //           height={16}
-  //         />
-  //         Examples
-  //       </a>
-  //       <a
-  //         className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-  //         href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-  //         target="_blank"
-  //         rel="noopener noreferrer"
-  //       >
-  //         <Image
-  //           aria-hidden
-  //           src="https://nextjs.org/icons/globe.svg"
-  //           alt="Globe icon"
-  //           width={16}
-  //           height={16}
-  //         />
-  //         Go to nextjs.org →
-  //       </a>
-  //     </footer>
-  //   </div>
-  // );
 }
